@@ -35,9 +35,15 @@ func count(m *metroImpl) {
 	}
 }
 
-func NewMetro(t Tempo) Metro {
+
+// Create a new metro
+// Tempo is in bpm and metro will tick at the rate of bar/div
+func NewMetro(t Tempo, div uint32) Metro {
 	m := new(metroImpl)
-	m.t = time.NewTicker(time.Duration(1000000))
+	// bars / sec
+	nsPerBar := 1000000000 * (240 / t)
+	dur := nsPerBar / Tempo(div)
+	m.t = time.NewTicker(time.Duration(dur))
 	m.c = make(chan Pos)
 	go count(m)
 	return m
