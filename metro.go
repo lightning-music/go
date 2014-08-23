@@ -7,11 +7,12 @@ import (
 // tempo in bpm
 type Tempo uint32
 
+// metro position
 type Pos uint64
 
+// metronome interface
 type Metro interface {
 	Ticker() chan Pos
-	Stop()
 }
 
 type metroImpl struct {
@@ -23,10 +24,6 @@ func (m *metroImpl) Ticker() chan Pos {
 	return m.c
 }
 
-func (m *metroImpl) Stop() {
-	m.t.Stop()
-}
-
 func count(m *metroImpl) {
 	var i Pos = 0
 	for _ = range m.t.C {
@@ -36,7 +33,7 @@ func count(m *metroImpl) {
 }
 
 
-// Create a new metro
+// Create a new metro and start it
 // Tempo is in bpm and metro will tick at the rate of bar/div
 func NewMetro(t Tempo, div uint32) Metro {
 	m := new(metroImpl)
