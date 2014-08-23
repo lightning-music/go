@@ -1,26 +1,44 @@
-package main
+package engine
 
 import (
-	"fmt"
-	"github.com/hypebeast/go-osc/osc"
-	"os"
 	"time"
 )
 
-func main() {
-	dur, err := time.ParseDuration("250ms")
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "Could not parse duration string")
+// tempo in bpm
+type Tempo uint32
+
+type Pos uint64
+
+type Metro interface {
+	Ticker() chan Pos
+	Stop()
+}
+
+type metroImpl struct {
+	t *time.Ticker
+	c chan Pos
+}
+
+func (m *metroImpl) Ticker() chan Pos {
+	return m.c
+}
+
+func (m *metroImpl) Stop() {
+	m.t.Stop()
+}
+
+func count(m *metroImpl) {
+	var i Pos = 0
+	for _ = range m.t.C {
+		i++
+		m.c <- i
 	}
-	ticker := time.NewTicker(dur)
-	host := "localhost"
-	port := 41068
-	client := osc.NewOscClient(host, port)
-	base := "/lightning/kits/default/samples"
-	msg := osc.NewOscMessage(base + "/0")
-	msg.Append(1.0)
-	msg.Append(1.0)
-	for _ = range ticker.C {
-		client.Send(msg)
-	}
+}
+
+func NewMetro(t Tempo) Metro {
+	m := new(metroImpl)
+	m.t = time.NewTicker(time.Duration(1000000))
+	m.c = make(chan Pos)
+	go count(m)
+	return m
 }
