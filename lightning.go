@@ -1,11 +1,11 @@
-package engine
+package lightning
 
 // go bindings for the lightning audio engine
 
 // #cgo CFLAGS: -Wall -O2
 // #cgo LDFLAGS: -L. -llightning -lm -ljack -lsndfile -lpthread -lsamplerate
-// #include "lightning.h"
-// #include "types.h"
+// #include <lightning/lightning.h>
+// #include <lightning/types.h>
 import "C"
 
 type impl struct {
