@@ -2,6 +2,7 @@ package lightning
 
 import (
 	"errors"
+	"math"
 )
 
 // Note contains the information to play a single note
@@ -15,6 +16,7 @@ type Pattern interface {
 	Length() int
 	NoteAt(pos Pos) Note
 	AddNote(pos Pos, note Note)
+	AppendNote(note Note)
 }
 
 // Note implementation
@@ -48,7 +50,26 @@ func (this *patternImpl) NoteAt(pos Pos) Note {
 	return this.notes[pos]
 }
 
+// return the next highest power of 2
+func nextPow2(i int) int {
+	var exp int = 0
+	for ; int(math.Pow(2, float64(exp))) < i; exp++ {}
+	return int(math.Pow(2, float64(exp)))
+}
+
 func (this *patternImpl) AddNote(pos Pos, note Note) {
+	notes := len(this.notes)
+	if int(pos) == notes {
+		this.notes = append(this.notes, note)
+	} else if int(pos) > notes {
+		back := this.notes
+		this.notes = make([]Note, nextPow2(int(pos)))
+		copy(this.notes, back)
+		this.notes[pos] = note
+	}
+}
+
+func (this *patternImpl) AppendNote(note Note) {
 	this.notes = append(this.notes, note)
 }
 
@@ -61,6 +82,6 @@ func NewNote(gain Gain, pitch Pitch) Note {
 
 func NewPattern() Pattern {
 	return &patternImpl{
-		make([]Note, 16),
+		make([]Note, 0),
 	}
 }
