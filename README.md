@@ -1,4 +1,4 @@
-lightning-control
+lightning
 =================
 
-Control [lightning-engine](https://github.com/briansorahan/lightning-engine)
+Make music with linux lightning fast!
