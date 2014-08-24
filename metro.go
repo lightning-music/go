@@ -20,6 +20,7 @@ type Metro struct {
 	// channel that emits position
 	Channel chan Pos
 	ticker *time.Ticker
+	stop chan int
 }
 
 // master
@@ -59,16 +60,40 @@ func (master *Master) NewSlave(meter string) (*Slave, error) {
 	return &slave, nil
 }
 
+func (metro *Metro) Stop() {
+	metro.ticker.Stop()
+	metro.stop <- 1
+}
+
+// change the timing of a master clock
+func (master *Master) SetTempo(tempo Tempo) error {
+	// how to switch out the current ticker
+	// for one that uses the new tempo?
+	// the old one is looping through the ticker with range,
+	// so we should probably stop the old one first
+	master.Stop()
+	// wait for it to signal that it is done
+	<-master.Metro.stop
+	master.ticker = time.NewTicker(duration(tempo))	
+	go count(&master.Metro)
+	return nil
+}
+
+func duration(tempo Tempo) time.Duration {
+	nsPerBar := 1000000000 * (240 / tempo)
+	dur := nsPerBar / Tempo(divider)
+	return time.Duration(dur)
+}
+
 // Create a new metro and start it
 // Tempo is in bpm and metro will tick at the rate of bar/div
 func NewMaster(tempo Tempo) *Master {
 	// bar div scalar
-	nsPerBar := 1000000000 * (240 / tempo)
-	dur := nsPerBar / Tempo(divider)
 	master := Master{
 		Metro{
 			make(chan Pos, 1),
-			time.NewTicker(time.Duration(dur)),
+			time.NewTicker(duration(tempo)),
+			make(chan int),
 		},
 		make([]*Slave, 4),
 	}
@@ -78,10 +103,18 @@ func NewMaster(tempo Tempo) *Master {
 
 func count(metro *Metro) {
 	var pos Pos = 0
-	for _ = range metro.ticker.C {
-		pos++
-		metro.Channel <- pos
+mainloop:
+	for {
+		select {
+		case <-metro.ticker.C:
+			metro.Channel <- pos
+			pos++
+		case <-metro.stop:
+			// break out of mainloop and signal done
+			break mainloop
+		}
 	}
+	metro.stop <- 1
 }
 
 func sync(slave *Slave, master *Master) {
