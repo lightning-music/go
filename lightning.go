@@ -7,8 +7,8 @@ package lightning
 // #include <lightning/types.h>
 import "C"
 
-type Pitch float32
-type Gain  float32
+type Pitch float64
+type Gain  float64
 
 type impl struct {
 	handle C.Lightning
