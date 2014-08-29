@@ -95,7 +95,7 @@ func NewMaster(tempo Tempo) *Master {
 			time.NewTicker(duration(tempo)),
 			make(chan int),
 		},
-		make([]*Slave, 4),
+		make([]*Slave, 0),
 	}
 	go count(&master.Metro)
 	return &master
@@ -118,14 +118,24 @@ mainloop:
 }
 
 func sync(slave *Slave, master *Master) {
-	var pos, rel Pos = 0, 0
+	if slave == nil {
+		panic("slave is nil")
+		return
+	}
+	if slave.Channel == nil {
+		panic("slave.Channel is nil")
+		return
+	}
+	var pos, rel, count Pos = 0, 0, 0
 	for _ = range master.Metro.Channel {
+		// not sure why we would need to do this
 		// send on master channel
-		master.Metro.Channel <- pos
+		// master.Metro.Channel <- pos
 		// send to slaves
 		for _, slave := range master.slaves {
 			if rel == 0 {
-				slave.Channel <- pos
+				slave.Channel <- count
+				count++
 			}
 		}
 		// increment position and relative position

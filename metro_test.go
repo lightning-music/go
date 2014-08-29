@@ -27,13 +27,25 @@ func TestParseDivisor(t *testing.T) {
 
 func TestNewSlave(t *testing.T) {
 	metro := NewMaster(120)
-	slave, err := metro.NewSlave("1/16")
-	assert.NotEqual(t, slave, nil)
-	assert.Equal(t, err, nil)
-	badstr := "3/abc"
-	slave, err = metro.NewSlave("3/abc")
+	
+	slave, err := metro.NewSlave("3/abc")
+	// not sure why assert.Equal fails here
 	if slave != nil {
 		t.Fail()
 	}
 	assert.NotEqual(t, err, nil)
+
+	slave, err = metro.NewSlave("1/16")
+	assert.NotEqual(t, slave, nil)
+	assert.Equal(t, err, nil)
+
+	if slave == nil || slave.Channel == nil {
+		t.Fail()
+	}
+
+	var pos Pos = 0
+	for ; pos < 4; {
+		pos = <-slave.Channel
+	}
+	assert.Equal(t, int(pos), 4)
 }
