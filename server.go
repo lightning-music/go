@@ -10,6 +10,7 @@ type Server interface {
 
 type serverImpl struct {
 	patterns map[string]Pattern
+	engine Engine
 }
 
 func apiHandler(writer http.ResponseWriter, req *http.Request) {
@@ -24,5 +25,6 @@ func NewServer(webroot string) Server {
 	http.HandleFunc("/api", apiHandler)
 	return &serverImpl{
 		make(map[string]Pattern),
+		NewEngine(),
 	}
 }
