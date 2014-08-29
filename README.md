@@ -1,6 +1,6 @@
-lightning
+lightning-go
 =================
 
-Make music with linux lightning fast!
+go wrapper for [liblightning](https://github.com/lightning/liblightning)
 
-[![Build Status](https://travis-ci.org/lightning/lightning.svg?branch=master)](https://travis-ci.org/lightning/lightning)
+[![Build Status](https://travis-ci.org/lightning/lightning-go.svg?branch=master)](https://travis-ci.org/lightning/lightning-go)
