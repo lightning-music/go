@@ -48,7 +48,7 @@ func (master *Master) addSlave(slave *Slave) {
 // 12, 16, 24, 32, 64, 128
 func (master *Master) NewSlave(meter string) (*Slave, error) {
 	mult, err := ParseDivisor(meter)
-	if err != nil {
+	if err != nil || mult == 0 {
 		return nil, err
 	}
 	slave := Slave{
@@ -144,7 +144,7 @@ func ParseDivisor(meter string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	if scanned != 2 || numerator != 1 {
+	if scanned != 2 || numerator != 1 || mult == 0 {
 		return 0, errors.New("invalid meter")
 	}
 	// acceptable clock divisors for slave syncing

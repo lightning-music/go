@@ -24,3 +24,16 @@ func TestParseDivisor(t *testing.T) {
 	_, err = ParseDivisor("1/5")
 	assert.NotEqual(t, err, nil)
 }
+
+func TestNewSlave(t *testing.T) {
+	metro := NewMaster(120)
+	slave, err := metro.NewSlave("1/16")
+	assert.NotEqual(t, slave, nil)
+	assert.Equal(t, err, nil)
+	badstr := "3/abc"
+	slave, err = metro.NewSlave("3/abc")
+	if slave != nil {
+		t.Fail()
+	}
+	assert.NotEqual(t, err, nil)
+}
