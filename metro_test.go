@@ -49,3 +49,9 @@ func TestNewSlave(t *testing.T) {
 	}
 	assert.Equal(t, int(pos), 4)
 }
+
+func TestSetTempo(t *testing.T) {
+	metro := NewMaster(120)
+	err := metro.SetTempo(150)
+	assert.Equal(t, err, nil)
+}

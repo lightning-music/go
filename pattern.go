@@ -6,14 +6,13 @@ import (
 
 // Note contains the information to play a single note
 type Note struct {
+	Sample string          `json:"sample"`
 	Gain Gain              `json:"gain"`
 	Pitch Pitch            `json:"pitch"`
 }
 
 // Pattern encapsulates a sequence for a given sample
 type Pattern struct {
-	// the sample this pattern is associated with
-	Sample string          `json:"sample"`
 	// number of notes currently in the pattern
 	Length int             `json:"length"`
 	// notes array
@@ -39,13 +38,12 @@ func (this *Pattern) AppendNote(note Note) {
 	this.Notes = append(this.Notes, note)
 }
 
-func NewNote(gain Gain, pitch Pitch) Note {
-	return Note{ gain, pitch, }
+func NewNote(sample string, gain Gain, pitch Pitch) Note {
+	return Note{ sample, gain, pitch, }
 }
 
-func NewPattern(sample string, sz int) Pattern {
+func NewPattern(sz int) Pattern {
 	return Pattern{
-		sample,
 		sz,
 		make([]Note, sz),
 	}

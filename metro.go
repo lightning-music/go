@@ -19,7 +19,10 @@ const divider int = 128 * 3
 type Metro struct {
 	// channel that emits position
 	Channel chan Pos
+	// the underlying ticker driving the metro
 	ticker *time.Ticker
+	// send any int on this channel to tell the
+	// metro to stop
 	stop chan int
 }
 
@@ -91,8 +94,11 @@ func NewMaster(tempo Tempo) *Master {
 	// bar div scalar
 	master := Master{
 		Metro{
+			// Channel
 			make(chan Pos, 1),
+			// ticker
 			time.NewTicker(duration(tempo)),
+			// stop
 			make(chan int),
 		},
 		make([]*Slave, 0),
