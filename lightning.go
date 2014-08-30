@@ -7,6 +7,11 @@ package lightning
 // #include <lightning/types.h>
 import "C"
 
+import (
+	"errors"
+	"math"
+)
+
 type Pitch float64
 type Gain  float64
 
@@ -18,10 +23,23 @@ func (this *impl) AddDir(file string) int {
 	return int(C.Lightning_add_dir(this.handle, C.CString(file)))
 }
 
-func (this *impl) PlaySample(file string, pitch Pitch, gain Gain) int {
-	return int(C.Lightning_play_sample(
+func (this *impl) PlaySample(file string, pitch Pitch, gain Gain) error {
+	err := C.Lightning_play_sample(
 		this.handle, C.CString(file), C.pitch_t(pitch), C.gain_t(gain),
-	))
+	)
+	if err != 0 {
+		return errors.New("could not play sample")
+	} else {
+		return nil
+	}
+}
+
+func getPitch(note Note) Pitch {
+	return Pitch(math.Pow(2.0, (float64(note.Number) - 60.0) / 12.0))
+}
+
+func (this *impl) PlayNote(note Note) error {
+	return this.PlaySample(note.Sample, getPitch(note), Gain(note.Velocity / 127.0))
 }
 
 func (this *impl) ExportStart(file string) int {
@@ -36,7 +54,8 @@ func (this *impl) ExportStop() int {
 
 type Engine interface {
 	AddDir(file string) int
-	PlaySample(file string, pitch Pitch, gain Gain) int
+	PlaySample(file string, pitch Pitch, gain Gain) error
+	PlayNote(note Note) error
 	ExportStart(file string) int
 	ExportStop() int
 }
