@@ -9,6 +9,7 @@ import (
 
 type Response struct {
 	Status string            `json:"string"`
+	Message string           `json:"message"`
 }
 
 type Server interface {
@@ -17,11 +18,8 @@ type Server interface {
 }
 
 type serverImpl struct {
-	patterns map[string]Pattern
+	audioRoot string
 	engine Engine
-}
-
-func apiHandler(writer http.ResponseWriter, req *http.Request) {
 }
 
 func (this *serverImpl) Listen(addr string) error {
@@ -58,7 +56,7 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(ep)
 			return
 		}
-		res = Response{ "ok" }
+		res = Response{ "ok", "played " + note.Sample, }
 		resb, em := json.Marshal(res)
 		if em != nil {
 			log.Fatal(em)
@@ -71,13 +69,17 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewServer(webroot string) Server {
+func NewServer(webRoot string, audioRoot string) (Server, error) {
 	server := &serverImpl{
-		make(map[string]Pattern),
+		audioRoot,
 		NewEngine(),
 	}
-	http.Handle("/", http.FileServer(http.Dir(webroot)))
+	api, ea := NewApi(audioRoot)
+	if ea != nil {
+		return nil, ea
+	}
+	http.Handle("/", http.FileServer(http.Dir(webRoot)))
 	http.Handle("/sample/play", server)
-	http.HandleFunc("/api", apiHandler)
-	return server
+	http.Handle("/api", api)
+	return server, nil
 }

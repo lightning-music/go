@@ -1,0 +1,37 @@
+samples.c:215 [Debug] playing /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav
+samples.c:190 [Debug] looking up /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav in sample cache
+samples.c:193 [Debug] sample /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav was not cached
+sample-ram.c:415 [Debug] allocating frame buffers of size 238516
+sample-ram.c:418 [Debug] allocated s->framebufs[0]  0x7fea3802e010
+sample-ram.c:419 [Debug] allocated s->framebufs[1]  0x7fea2594b010
+sample-ram.c:242 [Debug] SampleRam_init: done loading /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav
+samples.c:196 [Debug] storing /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav -> 0x10a6360 in cache
+samples.c:221 [Debug] loaded 0x10a6360
+sample-ram.c:249 [Debug] cloning sample 0x10a6380
+sample-ram.c:415 [Debug] allocating frame buffers of size 238516
+sample-ram.c:418 [Debug] allocated s->framebufs[0]  0x10bf8d0
+sample-ram.c:419 [Debug] allocated s->framebufs[1]  0x10f9c90
+sample-ram.c:267 [Debug] SampleRam_clone created 0x10bf750
+samples.c:223 [Debug] cloned 0x10a6360 to 0x10a6020
+samples.c:336 [Debug] play_new_samples adding 0x10a6020 to the ringbuffer
+samples.c:215 [Debug] playing /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav
+samples.c:190 [Debug] looking up /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav in sample cache
+samples.c:193 [Debug] sample /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav was not cached
+sample-ram.c:415 [Debug] allocating frame buffers of size 238516
+sample-ram.c:418 [Debug] allocated s->framebufs[0]  0x7fe259538010
+sample-ram.c:419 [Debug] allocated s->framebufs[1]  0x7fe2594fd010
+sample-ram.c:242 [Debug] SampleRam_init: done loading /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav
+samples.c:196 [Debug] storing /home/brian/Audio/freesound/48223__slothrop__trumpetc2.wav -> 0x1090360 in cache
+samples.c:221 [Debug] loaded 0x1090360
+sample-ram.c:249 [Debug] cloning sample 0x1090380
+sample-ram.c:415 [Debug] allocating frame buffers of size 238516
+sample-ram.c:418 [Debug] allocated s->framebufs[0]  0x10a98d0
+sample-ram.c:419 [Debug] allocated s->framebufs[1]  0x10e3c90
+sample-ram.c:267 [Debug] SampleRam_clone created 0x10a9750
+samples.c:223 [Debug] cloned 0x1090360 to 0x1090020
+samples.c:336 [Debug] play_new_samples adding 0x1090020 to the ringbuffer
+samples.c:262 [Debug] Samples_write read new sample 0x1090020
+samples.c:351 [Debug] free_done_samples freeing 0x1090020
+sample-ram.c:369 [Debug] SampleRam_free s->framebufs[0]  0x10a98d0
+sample-ram.c:370 [Debug] SampleRam_free s->framebufs[1]  0x10e3c90
+sample-ram.c:377 [Debug] freed 0x10a9750
