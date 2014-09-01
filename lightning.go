@@ -39,7 +39,9 @@ func getPitch(note Note) Pitch {
 }
 
 func (this *impl) PlayNote(note Note) error {
-	return this.PlaySample(note.Sample, getPitch(note), Gain(note.Velocity / 127.0))
+	pitch := getPitch(note)
+	gain := Gain(Gain(note.Velocity) / 127.0)
+	return this.PlaySample(note.Sample, pitch, gain)
 }
 
 func (this *impl) ExportStart(file string) int {

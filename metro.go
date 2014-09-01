@@ -7,16 +7,16 @@ import (
 )
 
 // tempo in bpm
-type Tempo uint64
+type Bpm float64
 
 // metro position
 type Pos uint64
 
-// bar divider for master metro creation
-const divider int = 128 * 3
-
 // metronome
 type Metro struct {
+	Tempo Bpm                   `json:"tempo"`
+	// bar divisor (number of ticks per bar)
+	Bardiv string               `json:"div"`
 	// channel that emits position
 	Channel chan Pos
 	// the underlying ticker driving the metro
@@ -26,85 +26,58 @@ type Metro struct {
 	stop chan int
 }
 
-// master
-type Master struct {
-	Metro
-	slaves []*Slave
-}
-
-// slave
-type Slave struct {
-	// slave channel
-	Channel chan Pos
-	// clock divisor
-	divisor int
-}
-
-func (master *Master) addSlave(slave *Slave) {
-	master.slaves = append(master.slaves, slave)
-}
-
-// Create a new metro that is slaved to a master
-// meter should be of the form "1/DIV"
-// where DIV can be any of
-// 1, 2, 3, 4, 5, 6, 7, 8,
-// 12, 16, 24, 32, 64, 128
-func (master *Master) NewSlave(meter string) (*Slave, error) {
-	mult, err := ParseDivisor(meter)
-	if err != nil || mult == 0 {
-		return nil, err
-	}
-	slave := Slave{
-		make(chan Pos, 1),
-		mult,
-	}
-	master.addSlave(&slave)
-	go sync(&slave, master)
-	return &slave, nil
-}
-
 func (metro *Metro) Stop() {
 	metro.ticker.Stop()
 	metro.stop <- 1
 }
 
-// change the timing of a master clock
-func (master *Master) SetTempo(tempo Tempo) error {
+// change the timing of a metro
+func (metro *Metro) SetTempo(tempo Bpm, bardiv string) error {
 	// how to switch out the current ticker
 	// for one that uses the new tempo?
 	// the old one is looping through the ticker with range,
 	// so we should probably stop the old one first
-	master.Stop()
+	metro.Stop()
 	// wait for it to signal that it is done
-	<-master.Metro.stop
-	master.ticker = time.NewTicker(duration(tempo))	
-	go count(&master.Metro)
+	<-metro.stop
+	dur, err := duration(tempo, bardiv)
+	if err != nil {
+		return err
+	}
+	metro.ticker = time.NewTicker(dur)
+	go count(metro)
 	return nil
 }
 
-func duration(tempo Tempo) time.Duration {
+func duration(tempo Bpm, bardiv string) (time.Duration, error) {
 	nsPerBar := 1000000000 * (240 / tempo)
-	dur := nsPerBar / Tempo(divider)
-	return time.Duration(dur)
+	div, err := ParseDivisor(bardiv)
+	if err != nil {
+		return 0, err
+	}
+	dur := nsPerBar / Bpm(div)
+	return time.Duration(dur), nil
 }
 
 // Create a new metro and start it
-// Tempo is in bpm and metro will tick at the rate of bar/div
-func NewMaster(tempo Tempo) *Master {
-	// bar div scalar
-	master := Master{
-		Metro{
-			// Channel
-			make(chan Pos, 1),
-			// ticker
-			time.NewTicker(duration(tempo)),
-			// stop
-			make(chan int),
-		},
-		make([]*Slave, 0),
+func NewMetro(tempo Bpm, bardiv string) (*Metro, error) {
+	dur, err := duration(tempo, bardiv)
+	if err != nil {
+		return nil, err
 	}
-	go count(&master.Metro)
-	return &master
+	// bar div scalar
+	metro := Metro{
+		tempo,
+		bardiv,
+		// Channel
+		make(chan Pos, 1),
+		// ticker
+		time.NewTicker(dur),
+		// stop
+		make(chan int),
+	}
+	go count(&metro)
+	return &metro, nil
 }
 
 func count(metro *Metro) {
@@ -121,33 +94,6 @@ mainloop:
 		}
 	}
 	metro.stop <- 1
-}
-
-func sync(slave *Slave, master *Master) {
-	if slave == nil {
-		panic("slave is nil")
-		return
-	}
-	if slave.Channel == nil {
-		panic("slave.Channel is nil")
-		return
-	}
-	var pos, rel, count Pos = 0, 0, 0
-	for _ = range master.Metro.Channel {
-		// not sure why we would need to do this
-		// send on master channel
-		// master.Metro.Channel <- pos
-		// send to slaves
-		for _, slave := range master.slaves {
-			if rel == 0 {
-				slave.Channel <- count
-				count++
-			}
-		}
-		// increment position and relative position
-		pos++
-		rel = Pos( int(rel + 1) % slave.divisor )
-	}
 }
 
 // meter should be of the form "1/DIV"
@@ -174,5 +120,5 @@ func ParseDivisor(meter string) (int, error) {
 	if !valid {
 		return 0, errors.New("invalid bar divisor")
 	}
-	return divider / mult, nil
+	return mult, nil
 }
