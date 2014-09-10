@@ -2,6 +2,7 @@ package lightning
 
 import (
 	"github.com/gorilla/websocket"
+	"github.com/hypebeast/go-osc/osc"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -20,6 +21,7 @@ type Server interface {
 type serverImpl struct {
 	audioRoot string
 	engine Engine
+	oscServer *osc.OscServer
 }
 
 func (this *serverImpl) Listen(addr string) error {
@@ -70,16 +72,25 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {
-	server := &serverImpl{
+	srv := &serverImpl{
 		audioRoot,
 		NewEngine(),
+		osc.NewOscServer("127.0.0.1", 4800),
 	}
+
 	api, ea := NewApi(audioRoot)
 	if ea != nil {
 		return nil, ea
 	}
+
+	// osc comm
+	srv.oscServer.AddMsgHandler("/sample/play", func(msg *osc.OscMessage) {
+		osc.PrintOscMessage(msg)
+	})
+	go srv.oscServer.ListenAndDispatch();
+
 	http.Handle("/", http.FileServer(http.Dir(webRoot)))
-	http.Handle("/sample/play", server)
+	http.Handle("/sample/play", srv)
 	http.Handle("/api", api)
-	return server, nil
+	return srv, nil
 }
