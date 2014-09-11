@@ -5,6 +5,6 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq libjack-dev libsndfile1-dev libsamplerate0-dev
   - go get github.com/bmizerany/assert
-  - github.com/gorilla/websocket
-  - github.com/hypebeast/go-osc/osc
+  - go get github.com/gorilla/websocket
+  - go get github.com/hypebeast/go-osc/osc
   - ./install-deps.sh
