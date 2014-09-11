@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"regexp"
 	"strings"
 )
 
@@ -74,11 +73,23 @@ func isSupported(f os.FileInfo, exts []string) bool {
 
 // get the path component of a url
 func GetPath(u *url.URL) (string, error) {
-	re := regexp.MustCompile("http://[^/]*/([^/]*).*")
-	matches := re.FindStringSubmatch(u.String())
-	if len(matches) < 2 {
-		msg := "could not get path component of url (" + u.String() + ")"
-		return "", errors.New(msg)
+	// re := regexp.MustCompile("^http://[^/]*/([^/]*)\\??([\d%_]=[\d%_])*$")
+	// matches := re.FindStringSubmatch(u.String())
+	// if len(matches) < 2 {
+	// 	msg := "could not get path component of url (" + u.String() + ")"
+	// 	return "", errors.New(msg)
+	// }
+	// return matches[1], nil
+	s := u.String()
+	slidx := strings.LastIndex(s, "/")
+	if slidx == -1 {
+		return "", errors.New(s + " -- bad url")
 	}
-	return matches[1], nil
+	rest := s[slidx:]
+	qidx := strings.Index(s, "?")
+	if qidx == -1 {
+		return rest, nil
+	} else {
+		return s[slidx:qidx], nil
+	}
 }
