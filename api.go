@@ -2,6 +2,7 @@ package lightning
 
 import (
 	"errors"
+// "fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -73,17 +74,17 @@ func isSupported(f os.FileInfo, exts []string) bool {
 
 // get the path component of a url
 func GetPath(u *url.URL) (string, error) {
-	// re := regexp.MustCompile("^http://[^/]*/([^/]*)\\??([\d%_]=[\d%_])*$")
-	// matches := re.FindStringSubmatch(u.String())
-	// if len(matches) < 2 {
-	// 	msg := "could not get path component of url (" + u.String() + ")"
-	// 	return "", errors.New(msg)
-	// }
-	// return matches[1], nil
 	s := u.String()
+	err := errors.New(s + " -- bad url")
+	peridx := strings.Index(s, ".")
+	// bail if not a proper domain
+	if peridx == -1 {
+		return "", err
+	}
 	slidx := strings.LastIndex(s, "/")
-	if slidx == -1 {
-		return "", errors.New(s + " -- bad url")
+// fmt.Printf("slidx=%d, peridx=%d\n", slidx, peridx)
+	if slidx == -1 || slidx <= peridx {
+		return "", err
 	}
 	rest := s[slidx:]
 	qidx := strings.Index(s, "?")
