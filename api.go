@@ -1,9 +1,12 @@
 package lightning
 
 import (
-	"net/http"
+	"errors"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -26,7 +29,9 @@ func (this *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewApi(audioRoot string) (Api, error) {
-	supportedExtensions := []string{ ".wav", ".flac", ".opus" }
+	supportedExtensions := []string{
+		".wav", ".flac", ".aif", ".aiff",
+	}
 
 	fh, eo := os.Open(audioRoot)
 	if eo != nil {
@@ -65,4 +70,15 @@ func isSupported(f os.FileInfo, exts []string) bool {
 		}
 	}
 	return is
+}
+
+// get the path component of a url
+func GetPath(u *url.URL) (string, error) {
+	re := regexp.MustCompile("http://[^/]*/([^/]*).*")
+	matches := re.FindStringSubmatch(u.String())
+	if len(matches) < 2 {
+		msg := "could not get path component of url (" + u.String() + ")"
+		return "", errors.New(msg)
+	}
+	return matches[1], nil
 }

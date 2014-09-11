@@ -77,18 +77,17 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 		NewEngine(),
 		osc.NewOscServer("127.0.0.1", 4800),
 	}
-
+	// api handler
 	api, ea := NewApi(audioRoot)
 	if ea != nil {
 		return nil, ea
 	}
-
 	// osc comm
 	srv.oscServer.AddMsgHandler("/sample/play", func(msg *osc.OscMessage) {
 		osc.PrintOscMessage(msg)
 	})
 	go srv.oscServer.ListenAndDispatch();
-
+	// setup handlers under default ServeMux
 	http.Handle("/", http.FileServer(http.Dir(webRoot)))
 	http.Handle("/sample/play", srv)
 	http.Handle("/api", api)
