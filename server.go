@@ -1,6 +1,7 @@
 package lightning
 
 import (
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
 	"encoding/json"
@@ -22,10 +23,11 @@ type serverImpl struct {
 	audioRoot string
 	engine Engine
 	oscServer *osc.OscServer
+	router *mux.Router
 }
 
 func (this *serverImpl) Listen(addr string) error {
-	return http.ListenAndServe(addr, nil)
+	return http.ListenAndServe(addr, this.router)
 }
 
 func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -76,6 +78,7 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 		audioRoot,
 		NewEngine(),
 		osc.NewOscServer("127.0.0.1", 4800),
+		mux.NewRouter(),
 	}
 	// api handler
 	api, ea := NewApi(audioRoot)
@@ -88,8 +91,8 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	})
 	go srv.oscServer.ListenAndDispatch();
 	// setup handlers under default ServeMux
-	http.Handle("/", http.FileServer(http.Dir(webRoot)))
-	http.Handle("/sample/play", srv)
-	http.Handle("/api", api)
+	srv.router.Handle("/", http.FileServer(http.Dir(webRoot)))
+	srv.router.Handle("/sample/play", srv)
+	srv.router.Handle("/api", api)
 	return srv, nil
 }
