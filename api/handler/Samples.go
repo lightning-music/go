@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Api interface {
+type Samples interface {
 	Samples() []string
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
@@ -17,7 +17,7 @@ type samples struct {
 }
 
 
-func (this *samples) Samples(w http.ResponseWriter, r *http.Request) {
+func (this *samples) Samples() []string {
 	return this.samples
 }
 
@@ -26,7 +26,7 @@ func (this *samples) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // read audio files in a directory and expose
 // some api endpoints
-func SamplesHandler(root string) http.Handler {
+func NewSamples(audioRoot string) (Samples, error) {
 	supportedExtensions := []string{
 		".wav", ".flac", ".aif", ".aiff",
 	}
@@ -54,9 +54,8 @@ func SamplesHandler(root string) http.Handler {
 		}
 	}
 
-	return &api{
+	return &samples{
 		files,
-		router,
 	}, nil
 }
 

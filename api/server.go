@@ -4,7 +4,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
-	"github.com/lightning/binding"
+	"github.com/lightning/go/binding"
+	"github.com/lightning/go/seq"
+	"github.com/lightning/go/types"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -22,7 +24,7 @@ type Server interface {
 
 type serverImpl struct {
 	audioRoot string
-	engine binding.Engine
+	engine types.Engine
 	oscServer *osc.OscServer
 	router *mux.Router
 }
@@ -50,18 +52,19 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Fatal(err)
 			return
 		}
-		note := new(Note)
-		ed := json.Unmarshal(p, note)
-		if ed != nil {
-			log.Fatal(ed)
+
+		note, enp := seq.ParseNote(p)
+		if enp != nil {
+			log.Fatal(enp)
 			return
 		}
-		ep := this.engine.PlayNote(*note)
+
+		ep := this.engine.PlayNote(note)
 		if ep != nil {
 			log.Fatal(ep)
 			return
 		}
-		res = Response{ "ok", "played " + note.Sample, }
+		res = Response{ "ok", "played " + note.Sample(), }
 		resb, em := json.Marshal(res)
 		if em != nil {
 			log.Fatal(em)
@@ -78,7 +81,7 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	rtr := mux.NewRouter()
 	srv := &serverImpl{
 		audioRoot,
-		NewEngine(),
+		binding.NewEngine(),
 		osc.NewOscServer("127.0.0.1", 4800),
 		rtr,
 	}

@@ -3,7 +3,6 @@ package types
 
 // this package should never import any other lightning packages
 import (
-	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -31,4 +30,11 @@ type Engine interface {
 	PlayNote(note Note) error
 	ExportStart(file string) int
 	ExportStop() int
+}
+
+// a collection of samples that also manages its own
+// endpoints in a rest api
+type Samples interface {
+	Samples() []string
+	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }

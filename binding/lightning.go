@@ -9,11 +9,9 @@ import "C"
 
 import (
 	"errors"
+	"github.com/lightning/go/types"
 	"math"
 )
-
-type Pitch float64
-type Gain  float64
 
 type impl struct {
 	handle C.Lightning
@@ -23,7 +21,7 @@ func (this *impl) AddDir(file string) int {
 	return int(C.Lightning_add_dir(this.handle, C.CString(file)))
 }
 
-func (this *impl) PlaySample(file string, pitch Pitch, gain Gain) error {
+func (this *impl) PlaySample(file string, pitch types.Pitch, gain types.Gain) error {
 	err := C.Lightning_play_sample(
 		this.handle, C.CString(file), C.pitch_t(pitch), C.gain_t(gain),
 	)
@@ -34,14 +32,14 @@ func (this *impl) PlaySample(file string, pitch Pitch, gain Gain) error {
 	}
 }
 
-func getPitch(note Note) Pitch {
-	return Pitch(math.Pow(2.0, (float64(note.Number) - 60.0) / 12.0))
+func getPitch(note types.Note) types.Pitch {
+	return types.Pitch(math.Pow(2.0, (float64(note.Number()) - 60.0) / 12.0))
 }
 
-func (this *impl) PlayNote(note Note) error {
+func (this *impl) PlayNote(note types.Note) error {
 	pitch := getPitch(note)
-	gain := Gain(Gain(note.Velocity) / 127.0)
-	return this.PlaySample(note.Sample, pitch, gain)
+	gain := types.Gain(types.Gain(note.Velocity()) / 127.0)
+	return this.PlaySample(note.Sample(), pitch, gain)
 }
 
 func (this *impl) ExportStart(file string) int {
@@ -54,7 +52,7 @@ func (this *impl) ExportStop() int {
 	return int(C.Lightning_export_stop(this.handle))
 }
 
-func NewEngine() Engine {
+func NewEngine() types.Engine {
 	instance := new(impl)
 	instance.handle = C.Lightning_init()
 	return instance

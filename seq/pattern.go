@@ -12,15 +12,15 @@ type Tempo uint64
 type Pattern struct {
 	Length int               `json:"length"`
 	// notes array
-	Notes [][]Note           `json:"notes"`
+	Notes [][]types.Note           `json:"notes"`
 }
 
-func (this *Pattern) NotesAt(pos Pos) []Note {
+func (this *Pattern) NotesAt(pos Pos) []types.Note {
 	notes := len(this.Notes)
 	return this.Notes[ int(pos) % notes ]
 }
 
-func (this *Pattern) AddNote(pos Pos, note Note) error {
+func (this *Pattern) AddNote(pos Pos, note types.Note) error {
 	var str string
 	if int(pos) >= this.Length {
 		str = "pos (%d) greater that pattern length (%d)"
@@ -41,6 +41,6 @@ func (this *Pattern) AddNote(pos Pos, note Note) error {
 func NewPattern(size int) Pattern {
 	return Pattern{
 		size,
-		make([][]Note, size),
+		make([][]types.Note, size),
 	}
 }
