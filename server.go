@@ -74,11 +74,12 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {
+	rtr := mux.NewRouter()
 	srv := &serverImpl{
 		audioRoot,
 		NewEngine(),
 		osc.NewOscServer("127.0.0.1", 4800),
-		mux.NewRouter(),
+		rtr,
 	}
 	// api handler
 	api, ea := NewApi(audioRoot)

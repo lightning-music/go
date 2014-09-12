@@ -1,8 +1,6 @@
-package lightning
+package handler
 
 import (
-// "fmt"
-// "github.com/lightning/lightning/types"
 	"log"
 	"net/http"
 	"os"
@@ -14,18 +12,21 @@ type Api interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
 
-type api struct {
+type samples struct {
 	samples []string
 }
 
-func (this *api) Samples() []string {
+
+func (this *samples) Samples(w http.ResponseWriter, r *http.Request) {
 	return this.samples
 }
 
-func (this *api) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (this *samples) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
-func NewApi(audioRoot string) (Api, error) {
+// read audio files in a directory and expose
+// some api endpoints
+func SamplesHandler(root string) http.Handler {
 	supportedExtensions := []string{
 		".wav", ".flac", ".aif", ".aiff",
 	}
@@ -55,10 +56,10 @@ func NewApi(audioRoot string) (Api, error) {
 
 	return &api{
 		files,
+		router,
 	}, nil
 }
 
-// determine if a file has a supported extension
 func isSupported(f os.FileInfo, exts []string) bool {
 	is := false
 	for _, ext := range exts {
