@@ -1,9 +1,10 @@
-package lightning
+package api
 
 import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
+	"github.com/lightning/binding"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -21,7 +22,7 @@ type Server interface {
 
 type serverImpl struct {
 	audioRoot string
-	engine Engine
+	engine binding.Engine
 	oscServer *osc.OscServer
 	router *mux.Router
 }

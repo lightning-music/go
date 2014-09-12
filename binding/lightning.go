@@ -1,5 +1,5 @@
 // go binding for the lightning audio engine
-package lightning
+package binding
 
 // #cgo CFLAGS: -Wall -O2
 // #cgo LDFLAGS: -L. -llightning -lm -ljack -lsndfile -lpthread -lsamplerate
@@ -52,14 +52,6 @@ func (this *impl) ExportStart(file string) int {
 
 func (this *impl) ExportStop() int {
 	return int(C.Lightning_export_stop(this.handle))
-}
-
-type Engine interface {
-	AddDir(file string) int
-	PlaySample(file string, pitch Pitch, gain Gain) error
-	PlayNote(note Note) error
-	ExportStart(file string) int
-	ExportStop() int
 }
 
 func NewEngine() Engine {

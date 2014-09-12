@@ -1,18 +1,12 @@
-package lightning
+package seq
 
 import (
 	"fmt"
+	"github.com/lightning/go/types"
 )
 
 // tempo in bpm
 type Tempo uint64
-
-// Note contains the information to play a single note
-type Note struct {
-	Sample string          `json:"sample"`
-	Number int             `json:"number"`
-	Velocity int           `json:"velocity"`
-}
 
 // Pattern encapsulates a sequence for a given sample
 type Pattern struct {
@@ -38,10 +32,6 @@ func (this *Pattern) AddNote(pos Pos, note Note) error {
 	}
 	this.Notes[ int(pos) ] = append(this.Notes[ int(pos) ], note)
 	return nil
-}
-
-func NewNote(sample string, number int, velocity int) Note {
-	return Note{ sample, number, velocity, }
 }
 
 // bardiv is a string of the form "1/<DIV>"

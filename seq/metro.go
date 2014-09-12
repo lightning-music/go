@@ -1,4 +1,4 @@
-package lightning
+package seq
 
 import (
 	"errors"
