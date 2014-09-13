@@ -2,7 +2,7 @@
 package binding
 
 // #cgo CFLAGS: -Wall -O2
-// #cgo LDFLAGS: -L. -llightning -lm -ljack -lsndfile -lpthread -lsamplerate
+// #cgo LDFLAGS: -L. -llightning -lm -ljack -lsndfile -lpthread -lsamplerate -logg
 // #include <lightning/lightning.h>
 // #include <lightning/types.h>
 import "C"
