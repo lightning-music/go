@@ -7,6 +7,7 @@ function main {
     ./install-check.sh
     make
     sudo make install
+    cd .. && ./install-pkg.sh
 }
 
 main "$@"
