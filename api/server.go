@@ -31,6 +31,7 @@ type serverImpl struct {
 
 func (this *serverImpl) Listen(addr string) error {
 	return http.ListenAndServe(addr, this.router)
+	// return http.ListenAndServe(addr, nil)
 }
 
 func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -59,6 +60,9 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// log.Printf("playing sample %v number=%v velocity=%v\n",
+		// 	note.Sample(), note.Number(), note.Velocity())
+
 		ep := this.engine.PlayNote(note)
 		if ep != nil {
 			log.Fatal(ep)
@@ -78,11 +82,12 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {
+	oscPort := 4800
 	rtr := mux.NewRouter()
 	srv := &serverImpl{
 		audioRoot,
 		binding.NewEngine(),
-		osc.NewOscServer("127.0.0.1", 4800),
+		osc.NewOscServer("127.0.0.1", oscPort),
 		rtr,
 	}
 	// api handler
@@ -91,12 +96,16 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 		return nil, ea
 	}
 	// osc comm
-	srv.oscServer.AddMsgHandler("/sample/play", func(msg *osc.OscMessage) {
+	pm := func(msg *osc.OscMessage) {
 		osc.PrintOscMessage(msg)
-	})
+	}
+	srv.oscServer.AddMsgHandler("/sample/play", pm)
 	go srv.oscServer.ListenAndDispatch();
+	log.Printf("osc server listening on port %d\n", oscPort)
 	// setup handlers under default ServeMux
-	srv.router.Handle("/", http.FileServer(http.Dir(webRoot)))
+	fh := http.FileServer(http.Dir(webRoot))
+	srv.router.Handle("/", fh)
+	srv.router.Handle("/{*.(js|css|png|jpg)}", fh)
 	srv.router.Handle("/sample/play", srv)
 	srv.router.Handle("/api", api)
 	return srv, nil
