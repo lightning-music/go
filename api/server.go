@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
 	"github.com/lightning/go/binding"
@@ -26,12 +25,10 @@ type serverImpl struct {
 	audioRoot string
 	engine types.Engine
 	oscServer *osc.OscServer
-	router *mux.Router
 }
 
 func (this *serverImpl) Listen(addr string) error {
-	return http.ListenAndServe(addr, this.router)
-	// return http.ListenAndServe(addr, nil)
+	return http.ListenAndServe(addr, nil)
 }
 
 func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -42,21 +39,24 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("could not upgrade http conn to ws: " + err.Error())
 		return
 	}
+
+	log.Println("connected to websocket endpoint")
 
 	for {
 		var res Response
 		msgType, p, err := conn.ReadMessage()
+
 		if err != nil {
-			log.Fatal(err)
+			log.Println("could not read ws message: " + err.Error())
 			return
 		}
 
 		note, enp := seq.ParseNote(p)
 		if enp != nil {
-			log.Fatal(enp)
+			log.Println("could not parse note: " + enp.Error())
 			return
 		}
 
@@ -65,34 +65,33 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		ep := this.engine.PlayNote(note)
 		if ep != nil {
-			log.Fatal(ep)
+			log.Println("could not play note: " + ep.Error())
 			return
 		}
 		res = Response{ "ok", "played " + note.Sample(), }
 		resb, em := json.Marshal(res)
 		if em != nil {
-			log.Fatal(em)
+			log.Println("could not marshal response: " + em.Error())
 			return
 		}
 		ew := conn.WriteMessage(msgType, resb)
 		if ew != nil {
-			log.Fatal(ew)
+			log.Println("could not write ws message: " + ew.Error())
 		}
 	}
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {
 	oscPort := 4800
-	rtr := mux.NewRouter()
 	srv := &serverImpl{
 		audioRoot,
 		binding.NewEngine(),
 		osc.NewOscServer("127.0.0.1", oscPort),
-		rtr,
 	}
 	// api handler
 	api, ea := NewApi(audioRoot)
 	if ea != nil {
+		log.Println("could not create api: " + ea.Error())
 		return nil, ea
 	}
 	// osc comm
@@ -104,9 +103,8 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	log.Printf("osc server listening on port %d\n", oscPort)
 	// setup handlers under default ServeMux
 	fh := http.FileServer(http.Dir(webRoot))
-	srv.router.Handle("/", fh)
-	srv.router.Handle("/{*.(js|css|png|jpg)}", fh)
-	srv.router.Handle("/sample/play", srv)
-	srv.router.Handle("/api", api)
+	http.Handle("/", fh)
+	http.Handle("/sample/play", srv)
+	http.HandleFunc("/samples", api.ListSamples())
 	return srv, nil
 }
