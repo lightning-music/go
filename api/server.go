@@ -17,6 +17,7 @@ type Response struct {
 }
 
 type Server interface {
+	Connect(ch1 string, ch2 string) error
 	Listen(addr string) error
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
@@ -81,6 +82,10 @@ func (this *serverImpl) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (this *serverImpl) Connect(ch1 string, ch2 string) error {
+	return this.engine.Connect(ch1, ch2)
+}
+
 func NewServer(webRoot string, audioRoot string) (Server, error) {
 	oscPort := 4800
 	srv := &serverImpl{
@@ -96,7 +101,15 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	}
 	// osc comm
 	pm := func(msg *osc.OscMessage) {
-		osc.PrintOscMessage(msg)
+		if len(msg.Arguments) != 3 {
+			log.Fatal("incorrect arguments to /sample/play (expects sii)")
+		}
+		samp := msg.Arguments[0].(string)
+		pitch := msg.Arguments[1].(int32)
+		gain := msg.Arguments[2].(int32)
+		log.Printf("Note(%s, %d, %d)\n", samp, pitch, gain)
+		note := seq.NewNote(samp, pitch, gain)
+		srv.engine.PlayNote(note)
 	}
 	srv.oscServer.AddMsgHandler("/sample/play", pm)
 	go srv.oscServer.ListenAndDispatch();
@@ -106,5 +119,8 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	http.Handle("/", fh)
 	http.Handle("/sample/play", srv)
 	http.HandleFunc("/samples", api.ListSamples())
+	if 0 != srv.engine.AddDir(audioRoot) {
+		log.Fatal("could not add dir " + audioRoot)
+	}
 	return srv, nil
 }

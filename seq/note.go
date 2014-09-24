@@ -5,31 +5,28 @@ import (
 	"github.com/lightning/go/types"
 )
 
-type Pitch types.Pitch
-type Gain types.Gain
-
 // Note contains the information to play a single note
 // in a pattern
 type note struct {
 	Samp string                  `json:"sample"`
-	Num types.Pitch              `json:"number"`
-	Vel types.Gain               `json:"velocity"`
+	Num int32                    `json:"number"`
+	Vel int32                    `json:"velocity"`
 }
 
 func (this *note) Sample() string {
 	return this.Samp
 }
 
-func (this *note) Number() types.Pitch {
+func (this *note) Number() int32 {
 	return this.Num
 }
 
-func (this *note) Velocity() types.Gain {
+func (this *note) Velocity() int32 {
 	return this.Vel
 }
 
 // create a new Note instance
-func NewNote(sample string, number types.Pitch, velocity types.Gain) types.Note {
+func NewNote(sample string, number int32, velocity int32) types.Note {
 	n := new(note)
 	n.Samp = sample
 	n.Num = number

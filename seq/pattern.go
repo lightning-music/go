@@ -10,7 +10,7 @@ type Tempo uint64
 
 // Pattern encapsulates a sequence for a given sample
 type Pattern struct {
-	Length int               `json:"length"`
+	Length int                     `json:"length"`
 	// notes array
 	Notes [][]types.Note           `json:"notes"`
 }

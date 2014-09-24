@@ -6,27 +6,18 @@ import (
 	"net/http"
 )
 
-// sugar
-type Pitch float64
-// sugar
-type Gain float64
-
-// thin wrapper around gorilla/mux/Router
-type Router interface {
-	Handle(path string, handler http.Handler) *Router
-}
-
 // Note
 type Note interface {
 	Sample() string
-	Number() Pitch
-	Velocity() Gain
+	Number() int32
+	Velocity() int32
 }
 
 // binding to liblightning
 type Engine interface {
+	Connect(ch1 string, ch2 string) error
 	AddDir(file string) int
-	PlaySample(file string, pitch Pitch, gain Gain) error
+	PlaySample(file string, pitch float64, gain float64) error
 	PlayNote(note Note) error
 	ExportStart(file string) int
 	ExportStop() int

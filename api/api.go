@@ -3,8 +3,8 @@ package api
 import (
 	"encoding/json"
 	"errors"
-// "fmt"
-// "github.com/lightning/lightning/types"
+	// "fmt"
+	// "github.com/lightning/lightning/api/handler"
 	"io"
 	"log"
 	"net/http"
