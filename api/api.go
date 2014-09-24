@@ -16,12 +16,20 @@ type Api interface {
 	ListSamples() http.HandlerFunc
 }
 
+type sample struct {
+	Path string               `json:"path"`
+}
+
 type api struct {
-	Samps []string
+	Samps []sample
 }
 
 func (this *api) Samples() []string {
-	return this.Samps
+	result := make([]string, len(this.Samps))
+	for i, s := range this.Samps {
+		result[i] = s.Path
+	}
+	return result
 }
 
 func (this *api) ListSamples() http.HandlerFunc {
@@ -59,15 +67,15 @@ func NewApi(audioRoot string) (Api, error) {
 		log.Println("no samples in " + audioRoot)
 		return nil, errors.New("no samples in " + audioRoot)
 	}
-	var files []string
+	var samples []sample
 	for _, f := range fs {
 		if isSupported(f, supportedExtensions) {
-			files = append(files, f.Name())
+			samples = append(samples, sample{ f.Name() })
 		}
 	}
 
 	return &api{
-		files,
+		samples,
 	}, nil
 }
 
