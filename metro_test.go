@@ -1,4 +1,4 @@
-package seq
+package lightning
 
 import (
 	"github.com/bmizerany/assert"

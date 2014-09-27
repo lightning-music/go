@@ -1,8 +1,7 @@
-package seq
+package lightning
 
 import (
 	"fmt"
-	"github.com/lightning/go/types"
 )
 
 // tempo in bpm
@@ -10,17 +9,16 @@ type Tempo uint64
 
 // Pattern encapsulates a sequence for a given sample
 type Pattern struct {
-	Length int                     `json:"length"`
-	// notes array
-	Notes [][]types.Note           `json:"notes"`
+	Length int      `json:"length"`
+	Notes  [][]Note `json:"notes"`
 }
 
-func (this *Pattern) NotesAt(pos Pos) []types.Note {
+func (this *Pattern) NotesAt(pos Pos) []Note {
 	notes := len(this.Notes)
-	return this.Notes[ int(pos) % notes ]
+	return this.Notes[int(pos)%notes]
 }
 
-func (this *Pattern) AddNote(pos Pos, note types.Note) error {
+func (this *Pattern) Set(pos Pos, note Note) error {
 	var str string
 	if int(pos) >= this.Length {
 		str = "pos (%d) greater that pattern length (%d)"
@@ -30,7 +28,7 @@ func (this *Pattern) AddNote(pos Pos, note types.Note) error {
 		str = "pos (%d) less than 0"
 		return fmt.Errorf(str, pos, this.Length)
 	}
-	this.Notes[ int(pos) ] = append(this.Notes[ int(pos) ], note)
+	this.Notes[int(pos)] = append(this.Notes[int(pos)], note)
 	return nil
 }
 
@@ -41,6 +39,6 @@ func (this *Pattern) AddNote(pos Pos, note types.Note) error {
 func NewPattern(size int) Pattern {
 	return Pattern{
 		size,
-		make([][]types.Note, size),
+		make([][]Note, size),
 	}
 }

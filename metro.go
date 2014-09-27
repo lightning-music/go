@@ -1,4 +1,4 @@
-package seq
+package lightning
 
 import (
 	"errors"
@@ -12,40 +12,49 @@ type Bpm float64
 // metro position
 type Pos uint64
 
+type MetroFunc func(pos Pos)
+
 // metronome
 type Metro struct {
-	Tempo Bpm                   `json:"tempo"`
-	// bar divisor (number of ticks per bar)
-	Bardiv string               `json:"div"`
-	// channel that emits position
+	Tempo   Bpm    `json:"tempo"`
+	Bardiv  string `json:"div"`
 	Channel chan Pos
-	// the underlying ticker driving the metro
-	ticker *time.Ticker
-	// send any int on this channel to tell the
-	// metro to stop
-	stop chan int
+	F       MetroFunc
+	ticker  *time.Ticker
+	stop    chan int
+	playing bool
 }
 
-func (metro *Metro) Stop() {
-	metro.ticker.Stop()
-	metro.stop <- 1
+func (this *Metro) Stop() {
+	this.ticker.Stop()
+	// signal the count gorouting to exit
+	this.stop <- 1
+	// wait for it to exit
+	<-this.stop
+	this.playing = false
 }
 
 // change the timing of a metro
-func (metro *Metro) SetTempo(tempo Bpm, bardiv string) error {
-	// how to switch out the current ticker
-	// for one that uses the new tempo?
-	// the old one is looping through the ticker with range,
-	// so we should probably stop the old one first
-	metro.Stop()
-	// wait for it to signal that it is done
-	<-metro.stop
-	dur, err := duration(tempo, bardiv)
+func (this *Metro) SetTempo(tempo Bpm, bardiv string) {
+	this.Tempo = tempo
+	this.Bardiv = bardiv
+}
+
+func (this *Metro) SetFunc(f MetroFunc) {
+	this.F = f
+}
+
+func (this *Metro) Start() error {
+	if this.playing {
+		return nil
+	}
+	this.playing = true
+	dur, err := duration(this.Tempo, this.Bardiv)
 	if err != nil {
 		return err
 	}
-	metro.ticker = time.NewTicker(dur)
-	go count(metro)
+	this.ticker = time.NewTicker(dur)
+	go count(this)
 	return nil
 }
 
@@ -60,24 +69,17 @@ func duration(tempo Bpm, bardiv string) (time.Duration, error) {
 }
 
 // Create a new metro and start it
-func NewMetro(tempo Bpm, bardiv string) (*Metro, error) {
-	dur, err := duration(tempo, bardiv)
-	if err != nil {
-		return nil, err
-	}
+func NewMetro(tempo Bpm, bardiv string) *Metro {
 	// bar div scalar
-	metro := Metro{
+	return &Metro{
 		tempo,
 		bardiv,
-		// Channel
 		make(chan Pos, 1),
-		// ticker
-		time.NewTicker(dur),
-		// stop
+		nil,
+		nil,
 		make(chan int),
+		false,
 	}
-	go count(&metro)
-	return &metro, nil
 }
 
 func count(metro *Metro) {
@@ -87,6 +89,9 @@ mainloop:
 		select {
 		case <-metro.ticker.C:
 			metro.Channel <- pos
+			if metro.F != nil {
+				metro.F(pos)
+			}
 			pos++
 		case <-metro.stop:
 			// break out of mainloop and signal done
@@ -110,7 +115,7 @@ func ParseDivisor(meter string) (int, error) {
 		return 0, errors.New("invalid meter")
 	}
 	// acceptable clock divisors for slave syncing
-	divisors := []int{ 1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 64, 128 }
+	divisors := []int{1, 2, 3, 4, 6, 8, 12, 16, 24, 32, 64, 128}
 	valid := false
 	for _, div := range divisors {
 		if mult == div {

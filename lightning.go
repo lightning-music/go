@@ -1,5 +1,5 @@
 // go binding for the lightning audio engine
-package binding
+package lightning
 
 // #cgo CFLAGS: -Wall -O2
 // #cgo LDFLAGS: -L. -llightning -lm -ljack -lsndfile -lpthread -lsamplerate -logg
@@ -9,7 +9,6 @@ import "C"
 
 import (
 	"errors"
-	"github.com/lightning/go/types"
 	"math"
 )
 
@@ -41,11 +40,11 @@ func (this *impl) PlaySample(file string, pitch float64, gain float64) error {
 	}
 }
 
-func getPitch(note types.Note) float64 {
+func getPitch(note Note) float64 {
 	return float64(math.Pow(2.0, (float64(note.Number()) - 60.0) / 12.0))
 }
 
-func (this *impl) PlayNote(note types.Note) error {
+func (this *impl) PlayNote(note Note) error {
 	pitch := getPitch(note)
 	gain := float64(float64(note.Velocity()) / 127.0)
 	return this.PlaySample(note.Sample(), pitch, gain)
@@ -62,7 +61,7 @@ func (this *impl) ExportStop() int {
 }
 
 // Initialize a new lightning engine.
-func NewEngine() types.Engine {
+func NewEngine() Engine {
 	instance := new(impl)
 	instance.handle = C.Lightning_init()
 	return instance

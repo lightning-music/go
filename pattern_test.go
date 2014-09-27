@@ -1,9 +1,7 @@
-package seq
+package lightning
 
 import (
 	"github.com/bmizerany/assert"
-	"github.com/lightning/go/types"
-	// "encoding/json"
 	"testing"
 )
 

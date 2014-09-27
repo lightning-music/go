@@ -1,10 +1,8 @@
-package api
+package lightning
 
 import (
 	"encoding/json"
 	"errors"
-	// "fmt"
-	// "github.com/lightning/lightning/api/handler"
 	"io"
 	"log"
 	"net/http"

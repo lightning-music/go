@@ -1,17 +1,10 @@
 // type definitions for lightning/go packages
-package types
+package lightning
 
 // this package should never import any other lightning packages
 import (
 	"net/http"
 )
-
-// Note
-type Note interface {
-	Sample() string
-	Number() int32
-	Velocity() int32
-}
 
 // binding to liblightning
 type Engine interface {
