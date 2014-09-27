@@ -6,9 +6,10 @@ import (
 )
 
 func TestNewMetro(t *testing.T) {
-	metro, err := NewMetro(Bpm(120), "1/16")
-	assert.Equal(t, err, nil)
+	metro  := NewMetro(Bpm(120), "1/16")
 	var pos Pos = 0
+	err := metro.Start()
+	assert.Equal(t, err, nil)
 	for ; pos < 3; {
 		pos = <-metro.Channel
 	}
@@ -27,8 +28,6 @@ func TestParseDivisor(t *testing.T) {
 }
 
 func TestSetTempo(t *testing.T) {
-	metro, err := NewMetro(Bpm(120), "1/16")
-	assert.Equal(t, err, nil)
-	err = metro.SetTempo(150, "1/16")
-	assert.Equal(t, err, nil)
+	metro := NewMetro(Bpm(120), "1/16")
+	metro.SetTempo(150, "1/16")
 }
