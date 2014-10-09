@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// tempo in bpm
+// Tempo in bpm
 type Tempo uint64
 
 // Pattern encapsulates a sequence for a given sample
@@ -13,12 +13,15 @@ type Pattern struct {
 	Notes  [][]Note `json:"notes"`
 }
 
+// NotesAt returns a slice representing the notes
+// that are stored at a particular position in a Pattern.
 func (this *Pattern) NotesAt(pos Pos) []Note {
 	notes := len(this.Notes)
 	return this.Notes[int(pos)%notes]
 }
 
-func (this *Pattern) Set(pos Pos, note Note) error {
+// AddTo adds a Note to the Pattern at pos
+func (this *Pattern) AddTo(pos Pos, note Note) error {
 	var str string
 	if int(pos) >= this.Length {
 		str = "pos (%d) greater that pattern length (%d)"
@@ -32,10 +35,8 @@ func (this *Pattern) Set(pos Pos, note Note) error {
 	return nil
 }
 
-// bardiv is a string of the form "1/<DIV>"
-// where DIV can be any of
-// 1, 2, 3, 4, 5, 6, 7, 8,
-// 12, 16, 24, 32, 64, 128
+// NewPattern creates a Pattern with the specified
+// initial size.
 func NewPattern(size int) Pattern {
 	return Pattern{
 		size,

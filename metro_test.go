@@ -6,7 +6,7 @@ import (
 )
 
 func TestNewMetro(t *testing.T) {
-	metro  := NewMetro(Bpm(120), "1/16")
+	metro  := NewMetro(Tempo(120), "1/16")
 	var pos Pos = 0
 	err := metro.Start()
 	assert.Equal(t, err, nil)
@@ -28,6 +28,6 @@ func TestParseDivisor(t *testing.T) {
 }
 
 func TestSetTempo(t *testing.T) {
-	metro := NewMetro(Bpm(120), "1/16")
+	metro := NewMetro(Tempo(120), "1/16")
 	metro.SetTempo(150, "1/16")
 }

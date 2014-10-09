@@ -28,23 +28,23 @@ func TestPatternLength(t *testing.T) {
 func TestPatternNotesAt(t *testing.T) {
 	pat := NewPattern(4)
 
-	err := pat.Set(0, NewNote("audio/file.flac", 60, 120))
+	err := pat.AddTo(0, NewNote("audio/file.flac", 60, 120))
 	assert.Equal(t, err, nil)
 
-	err = pat.Set(0, NewNote("audio/file.flac", 62, 120))
+	err = pat.AddTo(0, NewNote("audio/file.flac", 62, 120))
 	assert.Equal(t, err, nil)
 
-	err = pat.Set(0, NewNote("audio/file.flac", 64, 120))
+	err = pat.AddTo(0, NewNote("audio/file.flac", 64, 120))
 	assert.Equal(t, err, nil)
 
 	notes := pat.NotesAt(0)
 	assert.Equal(t, len(notes), 3)
 }
 
-func TestPatternSet(t *testing.T) {
+func TestPatternAddTo(t *testing.T) {
 	pat := NewPattern(1)
 	note := NewNote("audio/file.flac", 72, 96)
-	pat.Set(0, note)
+	pat.AddTo(0, note)
 }
 
 // func TestNoteEncodeJson(t *testing.T) {
@@ -65,7 +65,7 @@ func TestPatternSet(t *testing.T) {
 
 // func TestPatternEncodeJson(t *testing.T) {
 // 	pat := NewPattern(1)
-// 	pat.Set(0, NewNote("audio/file.flac", 56, 101))
+// 	pat.AddTo(0, NewNote("audio/file.flac", 56, 101))
 // 	expected := []byte(`{"length":1,"notes":[[{"sample":"audio/file.flac","number":56,"velocity":101}]]}`)
 // 	bs, err := json.Marshal(pat)
 // 	assert.Equal(t, err, nil)
@@ -74,8 +74,8 @@ func TestPatternSet(t *testing.T) {
 
 // func TestPatternDecodeJson(t *testing.T) {
 // 	expected := NewPattern(2)
-// 	expected.Set(0, NewNote("audio/file.flac", 55, 84))
-// 	expected.Set(1, NewNote("audio/file2.flac", 54, 76))
+// 	expected.AddTo(0, NewNote("audio/file.flac", 55, 84))
+// 	expected.AddTo(1, NewNote("audio/file2.flac", 54, 76))
 // 	bs := []byte(`{"length":2,"notes":[[{"sample":"audio/file.flac","number":55,"velocity":84}],[{"sample":"audio/file2.flac","number":54,"velocity":76}]]}`)
 // 	actual := new(Pattern)
 // 	err := json.Unmarshal(bs, &actual)

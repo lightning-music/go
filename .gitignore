@@ -3,3 +3,4 @@
 liblightning/
 lightningd
 lightning.log
+example/clients/osc-rand

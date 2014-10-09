@@ -22,14 +22,6 @@ type api struct {
 	Samps []sample
 }
 
-func (this *api) Samples() []string {
-	result := make([]string, len(this.Samps))
-	for i, s := range this.Samps {
-		result[i] = s.Path
-	}
-	return result
-}
-
 func (this *api) ListSamples() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		sl, me := json.Marshal(this.Samps)

@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+type Sample struct {
+	Path string `json:"path,omitempty"`
+}
+
 // Trigger random OSC samples
 func main() {
 	httpPort := flag.Int("httpPort", 3428, "address of lightning http interface")
@@ -26,7 +30,7 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	var samples []string
+	var samples []Sample
 
 	ba, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -54,7 +58,7 @@ func main() {
 	ticker := time.NewTicker(dur)
 	for _ = range ticker.C {
 		oscMsg := osc.NewOscMessage("/sample/play")
-		oscMsg.Append(samples[ rand.Intn(nsamples) ])
+		oscMsg.Append(samples[ rand.Intn(nsamples) ].Path)
 		oscMsg.Append(int32( rand.Intn(128) ))
 		oscMsg.Append(int32( rand.Intn(128) ))
 		err = oscClient.Send(oscMsg)

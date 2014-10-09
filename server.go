@@ -1,6 +1,7 @@
 package lightning
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
@@ -43,8 +44,8 @@ func (this *simp) Listen(addr string) error {
 	return http.ListenAndServe(addr, nil)
 }
 
-func (this *simp) SetNote(pos Pos, note Note) error {
-	return this.pattern.Set(pos, note)
+func (this *simp) AddNote(pos Pos, note Note) error {
+	return this.pattern.AddTo(pos, note)
 }
 
 func (this *simp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -72,7 +73,7 @@ func (this *simp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		note, enp := ParseNote(bs)
 		if enp != nil {
-			log.Println("could not parse note: " + enp.Error())
+			log.Printf("could not parse note from %s: %s\n", bytes.NewBuffer(bs).String(), enp.Error())
 			return
 		}
 
@@ -152,7 +153,7 @@ func patternEdit(s *simp) http.HandlerFunc {
 				return
 			}
 
-			err = s.SetNote(pe.Pos, pe.Note)
+			err = s.AddNote(pe.Pos, pe.Note)
 			if err != nil {
 				log.Println("could not set note: " + err.Error())
 				return
@@ -177,7 +178,7 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	// which means we have 1024 bars available
 	// initialize tempo to 120 bpm (a typical
 	// starting point for sequencers)
-	metro := NewMetro(Bpm(120), PATTERN_DIV)
+	metro := NewMetro(Tempo(120), PATTERN_DIV)
 	pat := NewPattern(PATTERN_LENGTH)
 	srv := &simp{
 		audioRoot,

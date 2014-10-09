@@ -6,9 +6,6 @@ import (
 	"time"
 )
 
-// tempo in bpm
-type Bpm float64
-
 // metro position
 type Pos uint64
 
@@ -16,7 +13,7 @@ type MetroFunc func(pos Pos)
 
 // metronome
 type Metro struct {
-	Tempo   Bpm    `json:"tempo"`
+	Tempo   Tempo    `json:"tempo"`
 	Bardiv  string `json:"div"`
 	Channel chan Pos
 	F       MetroFunc
@@ -35,7 +32,7 @@ func (this *Metro) Stop() {
 }
 
 // change the timing of a metro
-func (this *Metro) SetTempo(tempo Bpm, bardiv string) {
+func (this *Metro) SetTempo(tempo Tempo, bardiv string) {
 	this.Tempo = tempo
 	this.Bardiv = bardiv
 }
@@ -58,18 +55,18 @@ func (this *Metro) Start() error {
 	return nil
 }
 
-func duration(tempo Bpm, bardiv string) (time.Duration, error) {
+func duration(tempo Tempo, bardiv string) (time.Duration, error) {
 	nsPerBar := 1000000000 * (240 / tempo)
 	div, err := ParseDivisor(bardiv)
 	if err != nil {
 		return 0, err
 	}
-	dur := nsPerBar / Bpm(div)
+	dur := nsPerBar / Tempo(div)
 	return time.Duration(dur), nil
 }
 
 // Create a new metro and start it
-func NewMetro(tempo Bpm, bardiv string) *Metro {
+func NewMetro(tempo Tempo, bardiv string) *Metro {
 	// bar div scalar
 	return &Metro{
 		tempo,

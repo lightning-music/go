@@ -1,12 +1,6 @@
-// type definitions for lightning/go packages
 package lightning
 
-// this package should never import any other lightning packages
-import (
-	"net/http"
-)
-
-// binding to liblightning
+// Engine is the interface to the liblightning C bindings.
 type Engine interface {
 	Connect(ch1 string, ch2 string) error
 	AddDir(file string) int
@@ -14,11 +8,4 @@ type Engine interface {
 	PlayNote(note Note) error
 	ExportStart(file string) int
 	ExportStop() int
-}
-
-// a collection of samples that also manages its own
-// endpoints in a rest api
-type Samples interface {
-	Samples() []string
-	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
