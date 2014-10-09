@@ -17,3 +17,9 @@ func NewSequencer(patternSize int) *Sequencer {
 func (seq *Sequencer) AddTo(pos Pos, note Note) error {
 	return nil
 }
+
+// Clear removes all the notes at a given position
+// in the Sequencer's Pattern.
+func (seq *Sequencer) Clear(pos Pos) error {
+	return nil
+}
