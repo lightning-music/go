@@ -14,12 +14,12 @@ func NewSequencer(patternSize int) *Sequencer {
 
 // AddTo adds a note to the Sequencer's pattern
 // at pos.
-func (seq *Sequencer) AddTo(pos Pos, note Note) error {
-	return nil
+func (this *Sequencer) AddTo(pos Pos, note Note) error {
+	return this.pattern.AddTo(pos, note)
 }
 
 // Clear removes all the notes at a given position
 // in the Sequencer's Pattern.
-func (seq *Sequencer) Clear(pos Pos) error {
-	return nil
+func (this *Sequencer) Clear(pos Pos) error {
+	return this.pattern.Clear(pos)
 }
