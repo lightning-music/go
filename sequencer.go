@@ -23,3 +23,13 @@ func (this *Sequencer) AddTo(pos Pos, note Note) error {
 func (this *Sequencer) Clear(pos Pos) error {
 	return this.pattern.Clear(pos)
 }
+
+// Start plays the Sequencer's Pattern.
+func (this *Sequencer) Start() error {
+	return this.metro.Start()
+}
+
+// Stop playing the Sequencer's Pattern.
+func (this *Sequencer) Stop() {
+	this.metro.Stop()
+}

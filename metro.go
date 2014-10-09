@@ -6,12 +6,16 @@ import (
 	"time"
 )
 
-// metro position
+// Pos is used as the argument
 type Pos uint64
 
+// MetroFunc is a function registered with a metro to
+// process the metro position.
 type MetroFunc func(pos Pos)
 
-// metronome
+// Metro is a wrapper around time.Ticker that allows for
+// changing the timing of the underlying time.Ticker
+// and starting/stopping.
 type Metro struct {
 	Tempo   Tempo    `json:"tempo"`
 	Bardiv  string `json:"div"`
@@ -22,6 +26,7 @@ type Metro struct {
 	playing bool
 }
 
+// Stop stops the Metro.
 func (this *Metro) Stop() {
 	this.ticker.Stop()
 	// signal the count gorouting to exit
@@ -31,16 +36,18 @@ func (this *Metro) Stop() {
 	this.playing = false
 }
 
-// change the timing of a metro
+// SetTempo changes the timing of the Metro.
 func (this *Metro) SetTempo(tempo Tempo, bardiv string) {
 	this.Tempo = tempo
 	this.Bardiv = bardiv
 }
 
+// SetFunc changes the function invoked by the Metro.
 func (this *Metro) SetFunc(f MetroFunc) {
 	this.F = f
 }
 
+// Start resumes the Metro.
 func (this *Metro) Start() error {
 	if this.playing {
 		return nil
@@ -65,7 +72,7 @@ func duration(tempo Tempo, bardiv string) (time.Duration, error) {
 	return time.Duration(dur), nil
 }
 
-// Create a new metro and start it
+// NewMetro creates a new Metro.
 func NewMetro(tempo Tempo, bardiv string) *Metro {
 	// bar div scalar
 	return &Metro{
