@@ -1,5 +1,3 @@
-// Package lightning provides a sample-based sequencer
-// built on the liblightning C library.
 package lightning
 
 // #cgo CFLAGS: -Wall -O2
