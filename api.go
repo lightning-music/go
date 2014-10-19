@@ -15,7 +15,7 @@ type Api interface {
 }
 
 type sample struct {
-	Path string               `json:"path"`
+	Path string `json:"path"`
 }
 
 type api struct {
@@ -60,7 +60,7 @@ func NewApi(audioRoot string) (Api, error) {
 	var samples []sample
 	for _, f := range fs {
 		if isSupported(f, supportedExtensions) {
-			samples = append(samples, sample{ f.Name() })
+			samples = append(samples, sample{f.Name()})
 		}
 	}
 
