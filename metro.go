@@ -73,13 +73,13 @@ func duration(tempo Tempo, bardiv string) (time.Duration, error) {
 }
 
 // NewMetro creates a new Metro.
-func NewMetro(tempo Tempo, bardiv string) *Metro {
+func NewMetro(tempo Tempo, bardiv string, f MetroFunc) *Metro {
 	// bar div scalar
 	return &Metro{
 		tempo,
 		bardiv,
 		make(chan Pos, 1),
-		nil,
+		f,
 		nil,
 		make(chan int),
 		false,

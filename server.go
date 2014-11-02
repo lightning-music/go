@@ -3,6 +3,7 @@ package lightning
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
 	"log"
@@ -25,7 +26,7 @@ type PatternEdit struct {
 }
 
 type Response struct {
-	Status  string `json:"string"`
+	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
@@ -122,42 +123,55 @@ func (this *simp) playSample() http.HandlerFunc {
 
 // generate endpoint for starting pattern
 func (this *simp) patternPlay() http.HandlerFunc {
-	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
-		this.sequencer.Start()
-	})
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := this.sequencer.Start()
+		if err == nil {
+			fmt.Fprintf(w, "{\"status\":\"ok\"}")
+		} else {
+			fmt.Fprintf(w, "{\"error\":\"%s\"}", err.Error())
+		}
+	}
+	// return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+	// 	this.sequencer.Start()
+	// })
 }
 
 // generate endpoint for stopping pattern
 func (this *simp) patternStop() http.HandlerFunc {
-	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		this.sequencer.Stop()
-	})
+	}
+	// return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+	// 	this.sequencer.Stop()
+	// })
 }
 
 // generate endpoint for editing pattern
 func (this *simp) patternEdit() http.HandlerFunc {
-	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		var res Response
-		pe := new(PatternEdit)
-		ed := json.Unmarshal(msg, pe)
+		pes := make([]PatternEdit, 0)
+		dec := json.NewDecoder(r.Body)
+		ed := dec.Decode(&pes)
 		if ed != nil {
-			log.Println("could not decode ws message: " + ed.Error())
+			log.Println("could not decode request body: " + ed.Error())
 			return
 		}
-
-		err := this.AddTo(pe.Pos, pe.Note)
-		if err != nil {
-			log.Println("could not set note: " + err.Error())
-			return
+		for _, pe := range pes {
+			err := this.AddTo(pe.Pos, pe.Note)
+			if err != nil {
+				log.Println("could not set note: " + err.Error())
+				return
+			}
 		}
-
 		res = Response{"ok", "note added"}
 		resb, ee := json.Marshal(res)
 		if ee != nil {
 			log.Println("could not encode response: " + ee.Error())
 		}
-		conn.WriteMessage(msgType, resb)
-	})
+		buf := bytes.NewBuffer(resb)
+		fmt.Fprintf(w, "%s", buf.String())
+	}
 }
 
 func (this *simp) Connect(ch1 string, ch2 string) error {
@@ -169,11 +183,12 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	// which means we have 1024 bars available
 	// initialize tempo to 120 bpm (a typical
 	// starting point for sequencers)
+	engine := NewEngine()
 	srv := &simp{
 		audioRoot,
-		NewEngine(),
+		engine,
 		osc.NewOscServer(OSC_ADDR, OSC_PORT),
-		NewSequencer(PATTERN_LENGTH, Tempo(120), PATTERN_DIV),
+		NewSequencer(engine, PATTERN_LENGTH, Tempo(120), PATTERN_DIV),
 	}
 	// api handler
 	api, ea := NewApi(audioRoot)

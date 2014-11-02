@@ -8,10 +8,14 @@ type Sequencer struct {
 }
 
 // NewSequencer creates a Sequencer.
-func NewSequencer(patternSize int, tempo Tempo, bardiv string) *Sequencer {
+func NewSequencer(engine Engine, patternSize int, tempo Tempo, bardiv string) *Sequencer {
 	seq := new(Sequencer)
 	seq.pattern = NewPattern(patternSize)
-	seq.metro = NewMetro(tempo, bardiv)
+	seq.metro = NewMetro(tempo, bardiv, func(pos Pos) {
+		for _, note := range seq.pattern.NotesAt(pos) {
+			engine.PlayNote(note)
+		}
+	})
 	return seq
 }
 
