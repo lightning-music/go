@@ -3,9 +3,10 @@ package lightning
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"github.com/gorilla/websocket"
 	"github.com/hypebeast/go-osc/osc"
+	"io"
 	"log"
 	"net/http"
 )
@@ -80,7 +81,7 @@ func (s *simp) upgrade(handler WebsocketHandler) http.HandlerFunc {
 		for {
 			msgType, bs, err := conn.ReadMessage()
 
-			if err != nil {
+			if err != nil && err != io.EOF {
 				log.Println("could not read ws message: " + err.Error())
 				continue
 			}
@@ -123,38 +124,37 @@ func (this *simp) playSample() http.HandlerFunc {
 
 // generate endpoint for starting pattern
 func (this *simp) patternPlay() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := this.sequencer.Start()
-		if err == nil {
-			fmt.Fprintf(w, "{\"status\":\"ok\"}")
-		} else {
-			fmt.Fprintf(w, "{\"error\":\"%s\"}", err.Error())
-		}
-	}
-	// return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
-	// 	this.sequencer.Start()
-	// })
+	// return func(w http.ResponseWriter, r *http.Request) {
+	// 	err := this.sequencer.Start()
+	// 	if err == nil {
+	// 		fmt.Fprintf(w, "{\"status\":\"ok\"}")
+	// 	} else {
+	// 		fmt.Fprintf(w, "{\"error\":\"%s\"}", err.Error())
+	// 	}
+	// }
+	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+		this.sequencer.Start()
+	})
 }
 
 // generate endpoint for stopping pattern
 func (this *simp) patternStop() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		this.sequencer.Stop()
-	}
-	// return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+	// return func(w http.ResponseWriter, r *http.Request) {
 	// 	this.sequencer.Stop()
-	// })
+	// }
+	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
+		this.sequencer.Stop()
+	})
 }
 
 // generate endpoint for editing pattern
 func (this *simp) patternEdit() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
 		var res Response
 		pes := make([]PatternEdit, 0)
-		dec := json.NewDecoder(r.Body)
-		ed := dec.Decode(&pes)
-		if ed != nil {
-			log.Println("could not decode request body: " + ed.Error())
+		eum := json.Unmarshal(msg, &pes)
+		if eum != nil {
+			log.Println("could not unmarshal request body: " + eum.Error())
 			return
 		}
 		for _, pe := range pes {
@@ -169,9 +169,35 @@ func (this *simp) patternEdit() http.HandlerFunc {
 		if ee != nil {
 			log.Println("could not encode response: " + ee.Error())
 		}
-		buf := bytes.NewBuffer(resb)
-		fmt.Fprintf(w, "%s", buf.String())
-	}
+		// buf := bytes.NewBuffer(resb)
+		conn.WriteMessage(msgType, resb)
+		// fmt.Fprintf(conn, "%s", buf.String())
+	})
+
+	// return func(w http.ResponseWriter, r *http.Request) {
+	// 	var res Response
+	// 	pes := make([]PatternEdit, 0)
+	// 	dec := json.NewDecoder(r.Body)
+	// 	ed := dec.Decode(&pes)
+	// 	if ed != nil {
+	// 		log.Println("could not decode request body: " + ed.Error())
+	// 		return
+	// 	}
+	// 	for _, pe := range pes {
+	// 		err := this.AddTo(pe.Pos, pe.Note)
+	// 		if err != nil {
+	// 			log.Println("could not set note: " + err.Error())
+	// 			return
+	// 		}
+	// 	}
+	// 	res = Response{"ok", "note added"}
+	// 	resb, ee := json.Marshal(res)
+	// 	if ee != nil {
+	// 		log.Println("could not encode response: " + ee.Error())
+	// 	}
+	// 	buf := bytes.NewBuffer(resb)
+	// 	fmt.Fprintf(w, "%s", buf.String())
+	// }
 }
 
 func (this *simp) Connect(ch1 string, ch2 string) error {
