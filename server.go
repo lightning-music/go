@@ -95,7 +95,7 @@ func (this *simp) playSample() http.HandlerFunc {
 	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
 		var res Response
 		note, enp := ParseNote(msg)
-		if enp != nil {
+		if enp != nil && len(msg) > 0 {
 			fmtstr := "could not parse note from %s: %s\n"
 			log.Printf(fmtstr, bytes.NewBuffer(msg).String(), enp.Error())
 			return
@@ -153,8 +153,9 @@ func (this *simp) patternEdit() http.HandlerFunc {
 		var res Response
 		pes := make([]PatternEdit, 0)
 		eum := json.Unmarshal(msg, &pes)
-		if eum != nil {
+		if eum != nil && len(msg) > 0 {
 			log.Println("could not unmarshal request body: " + eum.Error())
+			log.Printf("request body: %s\n", bytes.NewBuffer(msg).String())
 			return
 		}
 		for _, pe := range pes {
