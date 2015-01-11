@@ -43,6 +43,10 @@ type simp struct {
 	sequencer *Sequencer
 }
 
+func (this *simp) Connect(ch1 string, ch2 string) error {
+	return this.engine.Connect(ch1, ch2)
+}
+
 func (this *simp) Listen(addr string) error {
 	return http.ListenAndServe(addr, nil)
 }
@@ -81,9 +85,16 @@ func (s *simp) upgrade(handler WebsocketHandler) http.HandlerFunc {
 		for {
 			msgType, bs, err := conn.ReadMessage()
 
-			if err != nil && err != io.EOF {
-				log.Println("could not read ws message: " + err.Error())
-				continue
+			if err != nil {
+				if err == io.EOF {
+					// if err is io.EOF, then it is likely the client
+					// has closed the connection, in which case we should
+					// close the connection on our end and start listening
+					// for a new one.
+					break
+				} else {
+					log.Fatal("could not read ws message: " + err.Error())
+				}
 			}
 
 			handler(conn, msgType, bs)
@@ -199,10 +210,6 @@ func (this *simp) patternEdit() http.HandlerFunc {
 	// 	buf := bytes.NewBuffer(resb)
 	// 	fmt.Fprintf(w, "%s", buf.String())
 	// }
-}
-
-func (this *simp) Connect(ch1 string, ch2 string) error {
-	return this.engine.Connect(ch1, ch2)
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {
