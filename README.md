@@ -1,6 +1,5 @@
-lightning/go
-=================
+# lightning/go
 
 go wrapper for [liblightning](https://github.com/lightning/liblightning)
 
-[![Build Status](https://travis-ci.org/lightning/go.svg?branch=master)](https://travis-ci.org/lightning/go)
+[![Build Status](https://drone.io/github.com/lightning/go/status.png)](https://drone.io/github.com/lightning/go/latest)
