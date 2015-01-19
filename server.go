@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"path"
 )
 
 const (
@@ -32,7 +33,6 @@ type Server interface {
 }
 
 type simp struct {
-	audioRoot string
 	engine    Engine
 	oscServer *osc.OscServer
 	sequencer *Sequencer
@@ -107,8 +107,7 @@ func (this *simp) playSample() http.HandlerFunc {
 			return
 		}
 
-		log.Printf("playing %v\n", bytes.NewBuffer(msg).String())
-		// log.Printf("playing sample %v number=%v velocity=%v\n",
+		// log.Printf("playing %v\n", bytes.NewBuffer(msg).String())
 		// 	note.Sample(), note.Number(), note.Velocity())
 
 		ep := this.engine.PlayNote(*note)
@@ -172,14 +171,20 @@ func (this *simp) patternEdit() http.HandlerFunc {
 	})
 }
 
-func NewServer(webRoot string, audioRoot string) (Server, error) {
+func NewServer(webRoot string) (Server, error) {
 	// our pattern has 16384 sixteenth notes,
 	// which means we have 1024 bars available
 	// initialize tempo to 120 bpm (a typical
 	// starting point for sequencers)
 	engine := NewEngine()
+	// add audio root to dir search list
+	audioRoot := path.Join(webRoot, "assets/audio")
+	ead := engine.AddDir(audioRoot)
+	if ead != nil {
+		return nil, ead
+	}
+	// initialize server
 	srv := &simp{
-		audioRoot,
 		engine,
 		osc.NewOscServer(OSC_ADDR, OSC_PORT),
 		NewSequencer(engine, PATTERN_LENGTH, Tempo(120), PATTERN_DIV),
@@ -216,9 +221,5 @@ func NewServer(webRoot string, audioRoot string) (Server, error) {
 	http.HandleFunc("/pattern", srv.patternEdit())
 	http.HandleFunc("/pattern/play", srv.patternPlay())
 	http.HandleFunc("/pattern/stop", srv.patternStop())
-	// add the audio root to the search path
-	if 0 != srv.engine.AddDir(audioRoot) {
-		log.Fatal("could not add dir " + audioRoot)
-	}
 	return srv, nil
 }

@@ -8,8 +8,25 @@ import "C"
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
+
+// lightning audio engine public interface
+type Engine interface {
+	// Connect JACK audio outputs
+	Connect(ch1 string, ch2 string) error
+	// Add a directory to the search list
+	AddDir(file string) error
+	// play an audio sample
+	PlaySample(file string, pitch float64, gain float64) error
+	// play a note
+	PlayNote(note Note) error
+	// start exporting
+	ExportStart(file string) int
+	// stop exporting
+	ExportStop() int
+}
 
 type impl struct {
 	handle C.Lightning
@@ -24,8 +41,12 @@ func (this *impl) Connect(ch1 string, ch2 string) error {
 	}
 }
 
-func (this *impl) AddDir(file string) int {
-	return int(C.Lightning_add_dir(this.handle, C.CString(file)))
+func (this *impl) AddDir(file string) error {
+	if rc := int(C.Lightning_add_dir(this.handle, C.CString(file))); rc != 0 {
+		return fmt.Errorf("Lightning_add_dir returned %d", rc)
+	} else {
+		return nil
+	}
 }
 
 func (this *impl) PlaySample(file string, pitch float64, gain float64) error {
