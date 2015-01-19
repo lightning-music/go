@@ -21,11 +21,6 @@ const (
 // function that handles websocket messages
 type WebsocketHandler func(conn *websocket.Conn, messageType int, msg []byte)
 
-type PatternEdit struct {
-	Pos  Pos  `json:"pos"`
-	Note Note `json:"note"`
-}
-
 type Response struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
@@ -112,6 +107,7 @@ func (this *simp) playSample() http.HandlerFunc {
 			return
 		}
 
+		log.Printf("playing %v\n", bytes.NewBuffer(msg).String())
 		// log.Printf("playing sample %v number=%v velocity=%v\n",
 		// 	note.Sample(), note.Number(), note.Velocity())
 
@@ -135,14 +131,6 @@ func (this *simp) playSample() http.HandlerFunc {
 
 // generate endpoint for starting pattern
 func (this *simp) patternPlay() http.HandlerFunc {
-	// return func(w http.ResponseWriter, r *http.Request) {
-	// 	err := this.sequencer.Start()
-	// 	if err == nil {
-	// 		fmt.Fprintf(w, "{\"status\":\"ok\"}")
-	// 	} else {
-	// 		fmt.Fprintf(w, "{\"error\":\"%s\"}", err.Error())
-	// 	}
-	// }
 	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
 		this.sequencer.Start()
 	})
@@ -150,9 +138,6 @@ func (this *simp) patternPlay() http.HandlerFunc {
 
 // generate endpoint for stopping pattern
 func (this *simp) patternStop() http.HandlerFunc {
-	// return func(w http.ResponseWriter, r *http.Request) {
-	// 	this.sequencer.Stop()
-	// }
 	return this.upgrade(func(conn *websocket.Conn, msgType int, msg []byte) {
 		this.sequencer.Stop()
 	})
@@ -185,31 +170,6 @@ func (this *simp) patternEdit() http.HandlerFunc {
 		conn.WriteMessage(msgType, resb)
 		// fmt.Fprintf(conn, "%s", buf.String())
 	})
-
-	// return func(w http.ResponseWriter, r *http.Request) {
-	// 	var res Response
-	// 	pes := make([]PatternEdit, 0)
-	// 	dec := json.NewDecoder(r.Body)
-	// 	ed := dec.Decode(&pes)
-	// 	if ed != nil {
-	// 		log.Println("could not decode request body: " + ed.Error())
-	// 		return
-	// 	}
-	// 	for _, pe := range pes {
-	// 		err := this.AddTo(pe.Pos, pe.Note)
-	// 		if err != nil {
-	// 			log.Println("could not set note: " + err.Error())
-	// 			return
-	// 		}
-	// 	}
-	// 	res = Response{"ok", "note added"}
-	// 	resb, ee := json.Marshal(res)
-	// 	if ee != nil {
-	// 		log.Println("could not encode response: " + ee.Error())
-	// 	}
-	// 	buf := bytes.NewBuffer(resb)
-	// 	fmt.Fprintf(w, "%s", buf.String())
-	// }
 }
 
 func NewServer(webRoot string, audioRoot string) (Server, error) {

@@ -13,6 +13,11 @@ type Pattern struct {
 	Notes      [][]Note `json:"notes"`
 }
 
+type PatternEdit struct {
+	Pos  Pos  `json:"pos"`
+	Note Note `json:"note"`
+}
+
 func (this *Pattern) indexTooLarge(pos Pos) error {
 	str := "pos (%d) greater than pattern length (%d)"
 	return fmt.Errorf(str, pos, this.Length)
