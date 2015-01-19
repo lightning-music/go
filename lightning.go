@@ -28,6 +28,16 @@ type Engine interface {
 	ExportStop() int
 }
 
+// Note type
+type Note interface {
+	// Sample associated with the note
+	Sample() string
+	// Note number
+	Number() int32
+	// Velocity of the note
+	Velocity() int32
+}
+
 type impl struct {
 	handle C.Lightning
 }
@@ -61,7 +71,7 @@ func (this *impl) PlaySample(file string, pitch float64, gain float64) error {
 }
 
 func getPitch(note Note) float64 {
-	return float64(math.Pow(2.0, (float64(note.Number()) - 60.0) / 12.0))
+	return float64(math.Pow(2.0, (float64(note.Number())-60.0)/12.0))
 }
 
 func (this *impl) PlayNote(note Note) error {
