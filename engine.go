@@ -16,13 +16,15 @@ import (
 type Engine interface {
 	// Connect JACK audio outputs
 	Connect(ch1 string, ch2 string) error
-	// Add a directory to the search list
+	// AddDir a directory to the search list
 	AddDir(file string) error
-	// play an audio sample
+	// PlaySample plays an audio sample
 	PlaySample(file string, pitch float64, gain float64) error
-	// start exporting
+	// PlayNote plays a note
+	PlayNote(note Note) error
+	// ExportStart start exporting to an audio file
 	ExportStart(file string) int
-	// stop exporting
+	// ExportStop stop the currently running export job if there is one
 	ExportStop() int
 }
 
