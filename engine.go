@@ -20,22 +20,10 @@ type Engine interface {
 	AddDir(file string) error
 	// play an audio sample
 	PlaySample(file string, pitch float64, gain float64) error
-	// play a note
-	PlayNote(note Note) error
 	// start exporting
 	ExportStart(file string) int
 	// stop exporting
 	ExportStop() int
-}
-
-// Note type
-type Note interface {
-	// Sample associated with the note
-	Sample() string
-	// Note number
-	Number() int32
-	// Velocity of the note
-	Velocity() int32
 }
 
 type impl struct {
@@ -70,14 +58,15 @@ func (this *impl) PlaySample(file string, pitch float64, gain float64) error {
 	}
 }
 
+// OPTIMIZE: use a static map from midi notes to pitches
 func getPitch(note Note) float64 {
-	return float64(math.Pow(2.0, (float64(note.Number())-60.0)/12.0))
+	return float64(math.Pow(2.0, (float64(note.Number)-60.0)/12.0))
 }
 
 func (this *impl) PlayNote(note Note) error {
 	pitch := getPitch(note)
-	gain := float64(float64(note.Velocity()) / 127.0)
-	return this.PlaySample(note.Sample(), pitch, gain)
+	gain := float64(float64(note.Velocity) / 127.0)
+	return this.PlaySample(note.Sample, pitch, gain)
 }
 
 func (this *impl) ExportStart(file string) int {
@@ -90,7 +79,7 @@ func (this *impl) ExportStop() int {
 	return int(C.Lightning_export_stop(this.handle))
 }
 
-// Initialize a new lightning engine.
+// NewEngine initializes a new lightning engine.
 func NewEngine() Engine {
 	instance := new(impl)
 	instance.handle = C.Lightning_init()
