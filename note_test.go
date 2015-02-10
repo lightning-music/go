@@ -7,9 +7,7 @@ import (
 )
 
 func TestDecodeNote(t *testing.T) {
-	note := new(Note)
-	data := bytes.NewBufferString(`{"sample":"foo.wav","number":61,"velocity":87}`)
-	err := json.Unmarshal(data.Bytes(), note)
+	_, err := DecodeNoteString(`{"sample":"foo.wav","number":61,"velocity":87}`)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +15,7 @@ func TestDecodeNote(t *testing.T) {
 
 func TestEncodeNote(t *testing.T) {
 	note := Note{"bar.wav", 39, 105}
-	buf, err := json.Marshal(note)
+	buf, err := json.Marshal(&note)
 	if err != nil {
 		t.Fatal(err)
 	}
