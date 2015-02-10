@@ -21,7 +21,7 @@ type Engine interface {
 	// PlaySample plays an audio sample
 	PlaySample(file string, pitch float64, gain float64) error
 	// PlayNote plays a note
-	PlayNote(note Note) error
+	PlayNote(note *Note) error
 	// ExportStart start exporting to an audio file
 	ExportStart(file string) int
 	// ExportStop stop the currently running export job if there is one
@@ -61,11 +61,11 @@ func (this *impl) PlaySample(file string, pitch float64, gain float64) error {
 }
 
 // OPTIMIZE: use a static map from midi notes to pitches
-func getPitch(note Note) float64 {
+func getPitch(note *Note) float64 {
 	return float64(math.Pow(2.0, (float64(note.Number)-60.0)/12.0))
 }
 
-func (this *impl) PlayNote(note Note) error {
+func (this *impl) PlayNote(note *Note) error {
 	pitch := getPitch(note)
 	gain := float64(float64(note.Velocity) / 127.0)
 	return this.PlaySample(note.Sample, pitch, gain)
